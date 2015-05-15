@@ -115,9 +115,9 @@ bool init(){
 bool load_files(){
 
 	//load the image
-	image=load_image("x.png");
-
-	if(image==NULL){
+	background=load_image("background.bmp");
+		message=load_image("dog.bmp");
+	if((background||message)==NULL){
 
 		return false;
 	}
@@ -149,9 +149,11 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	//apply image to screen
-	apply_surface(0,0,image, screen);
 
+	//apply image to screen
+	apply_surface(0,0,background, screen);
+
+	apply_surface(240,140,message,screen);
 	//Update the screen
 	if( SDL_Flip( screen ) == -1 ) {
 		return 1;
