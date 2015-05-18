@@ -5,7 +5,6 @@
 // Copyright   : Your copyright notice
 // Description : Hello World in C++, Ansi-style
 //============================================================================
-
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_ttf.h"
@@ -21,27 +20,37 @@ const int SCREEN_BPP=32;
 
 enum keyPressSurface{
 
-	KEY_PRESS_SURFACE_DEFAULT,
-	KEY_PRESS_SURFACE_UP,
-	KEY_PRESS_SURFACE_DOWN,
-	KEY_PRESS_SURFACE_LEFT,
-	KEY_PRESS_SURFACE_RIGHT,
-	KEY_PRESS_SURFACE_TOTAL
+	KEY_PRESS_DEFAULT,
+	KEY_PRESS_UP,
+	KEY_PRESS_DOWN,
+	KEY_PRESS_LEFT,
+	KEY_PRESS_RIGHT,
+	KEY_PRESS_TOTAL
 
 
 };
 
+SDL_Surface* currentSurface=NULL;
 
-SDL_Surface* background=NULL;
+SDL_Surface* keyPresses[KEY_PRESS_TOTAL];
+
+//window
 SDL_Surface* screen=NULL;
-SDL_Surface* message=NULL;
+
+//background image
+SDL_Surface* background=NULL;
+
+//
+SDL_Surface* crab=NULL;
+SDL_Surface* dog=NULL;
 SDL_Surface* image=NULL;
 
+//event handler
 SDL_Event event;
 
 using namespace std;
 
-
+//loads each image using path in local directory
 SDL_Surface *load_image(std::string filename){
 
 	//temporary storage for the image loaded
@@ -52,6 +61,8 @@ SDL_Surface *load_image(std::string filename){
 
 	//load the image
 	loadedImage=IMG_Load(filename.c_str());
+
+	printf("test");
 
 	//if nothing went wrong
 	if(loadedImage!=NULL){
@@ -70,6 +81,9 @@ SDL_Surface *load_image(std::string filename){
 
 }
 
+
+//two pointers one that points to where the background image is, the other to the window
+//x y offset positions the image using rectangle object
 void apply_surface(int x, int y, SDL_Surface* source,SDL_Surface* destination){
 
 	//rectangle to hold offsets
@@ -116,8 +130,9 @@ bool load_files(){
 
 	//load the image
 	background=load_image("background.bmp");
-		message=load_image("dog.bmp");
-	if((background||message)==NULL){
+		dog=load_image("dog.bmp");
+		crab=load_image("crab.png");
+	if((background||dog||crab)==0){
 
 		return false;
 	}
@@ -125,17 +140,76 @@ bool load_files(){
 	return true;
 }
 
-void cleanUp(){
 
-	SDL_FreeSurface(image);
-	SDL_Quit();
+bool load_media(){
+
+	//success flag
+	bool success = true;
+
+	//default surface
+	keyPresses[KEY_PRESS_DEFAULT] = load_image("04_key_presses/press.bmp");
+
+	if(keyPresses[KEY_PRESS_DEFAULT]==NULL){
+
+		printf("failed to display default image");
+	}
+
+
+	keyPresses[KEY_PRESS_UP] = load_image("04_key_presses/up.bmp");
+
+	if(keyPresses[KEY_PRESS_UP]==NULL){
+
+		printf("failed to display up image");
+	}
+
+
+	keyPresses[KEY_PRESS_DOWN] = load_image("04_key_presses/down.bmp");
+
+	if(keyPresses[KEY_PRESS_DOWN]==NULL){
+
+		printf("failed to display down image");
+	}
+
+
+	keyPresses[KEY_PRESS_LEFT] = load_image("04_key_presses/left.bmp");
+
+	if(keyPresses[KEY_PRESS_LEFT]==NULL){
+
+		printf("failed to display left image");
+	}
+
+
+	keyPresses[KEY_PRESS_RIGHT] = load_image("04_key_presses/right.bmp");
+
+	if(keyPresses[KEY_PRESS_RIGHT]==NULL){
+
+		printf("failed to display right image");
+	}
+
 
 }
+
+void close(){
+
+
+
+}
+
+void cleanUp(){
+SDL_FreeSurface(image);
+SDL_Quit();
+}
+
+
 
 int main(int argc, char* argv[]) {
 
 	//Quit bool
 	bool quit = false;
+
+	SDL_Event e;
+
+	currentSurface = keyPresses[KEY_PRESS_DEFAULT];
 
 	//initialize
 	if(init()==false){
@@ -150,10 +224,15 @@ int main(int argc, char* argv[]) {
 	}
 
 
-	//apply image to screen
-	apply_surface(0,0,background, screen);
+	//apply image to window starting at upper left corner
 
-	apply_surface(240,140,message,screen);
+
+//apply_surface(0,0,background, screen);
+//apply_surface(240,140,dog,screen);
+//apply_surface(480,0,crab,screen);
+SDL_BlitSurface(currentSurface,NULL,screen,NULL);
+//SDL_UpdateWindowSurface();
+
 	//Update the screen
 	if( SDL_Flip( screen ) == -1 ) {
 		return 1;
@@ -166,6 +245,23 @@ int main(int argc, char* argv[]) {
 			if(event.type==SDL_QUIT){
 
 				quit=true;
+			}
+
+
+				else if(e.type==SDL_KEYDOWN){
+
+					//Select surfaces based on key press
+					switch(e.key.keysym.sym){
+
+					case SDLK_UP:
+						currentSurface = keyPresses[KEY_PRESS_UP];
+
+
+					case SDLK_DOWN:
+						currentSurface = keyPresses[KEY_PRESS_DOWN];
+					}
+
+
 			}
 
 
